@@ -1,6 +1,10 @@
 <template>
   <div class="table-container">
-    <el-button style="margin:6px;" type="primary" @click="handleInsert()">新建人员</el-button>
+    <div>
+      <el-button style="margin:6px;" type="primary" @click="handleInsert()">新建人员</el-button>
+      <el-button type="success" @click="downLoadExcel()">下载excel</el-button>
+    </div>
+    
     <el-table
       :key="employees.id"
       :data="employees"
@@ -70,12 +74,12 @@
         </el-form-item>
         
           <el-row>
-          <el-col span="8">
+          <el-col :span="8">
             <el-form-item label="紧急联系人" prop="urgent_contact">
             <el-input v-model="userInfo.urgent_contact" placeholder="联系人姓名"/>
           </el-form-item>
           </el-col>
-          <el-col span="12">
+          <el-col :span="12">
             <el-form-item label="联系人电话" prop="urgent_contact">
             <el-input placeholder="联系人电话" v-model="userInfo.urgent_contact_cell_number"/>
           </el-form-item>
@@ -85,7 +89,17 @@
         <el-tabs value="first">
           <el-tab-pane label="保险&健康信息" name="first">
             <el-form-item label="健康情况" prop="health">
-              <el-input v-model="userInfo.insurance_health_info.health" />
+              <!-- <el-input v-model="" /> -->
+              <el-select v-model="userInfo.insurance_health_info.health" placeholder="请选择">
+              <el-option
+                label="健康"
+                value="健康">
+              </el-option>
+              <el-option
+                label="不健康"
+                value="不健康">
+              </el-option>
+            </el-select>
             </el-form-item>
             <el-form-item label="健康证明" prop="health_certificate">
               <el-upload
@@ -100,24 +114,40 @@
             >
             <i class="el-icon-plus" @click="submitHealthFileForm" />
             </el-upload>
+            <el-dialog :visible.sync="picturePreviewVisible" :append-to-body="true">
+            <img width="100%" :src="dialogImageUrl" alt="">
+          </el-dialog>
             </el-form-item>
         <el-row>
-          <el-col span="10">
+          <el-col :span="10">
             <el-form-item label="参保类型" prop="partic_insu_type" label-width="100px">
-              <el-input v-model="userInfo.insurance_health_info.partic_insu_type" />
+              <el-select v-model="userInfo.insurance_health_info.partic_insu_type" placeholder="请选择">
+              <el-option
+                label="社保五险"
+                value="社保五险">
+              </el-option>
+              <el-option
+                label="团体意外险"
+                value="团体意外险">
+              </el-option>
+              <el-option
+                label="雇主责任险"
+                value="雇主责任险">
+              </el-option>
+            </el-select>
             </el-form-item>
           </el-col>
-          <el-col span="10">
+          <el-col :span="10">
             <el-form-item label="保费金额" prop="partic_insu_amount">
               <el-input v-model.number="userInfo.insurance_health_info.partic_insu_amount" type="number" />
             </el-form-item>
           </el-col>
-          <el-col span="10">
+          <el-col :span="10">
           <el-form-item label="参保时间" prop="partic_insu_time">
             <el-date-picker v-model="userInfo.insurance_health_info.partic_insu_time"  type="date" value-format="yyyy-MM-dd" placeholder="选择日期" style="width: 100%;" />  
             </el-form-item>
           </el-col>
-          <el-col span="10">
+          <el-col :span="10">
             <el-form-item label="离保时间" prop="leave_insu_time">
               <el-date-picker v-model="userInfo.insurance_health_info.leave_insu_time"  type="date" value-format="yyyy-MM-dd" placeholder="选择日期" style="width: 100%;" />
             </el-form-item>
@@ -129,24 +159,34 @@
         <el-tabs value="first">
           <el-tab-pane label="工作信息" name="first">
             <el-form-item label="现在是否在职" prop="at_work">
-              <el-input v-model="userInfo.work_info.at_work" />
+              <!-- <el-input v-model="userInfo.work_info.at_work" /> -->
+              <el-select v-model="userInfo.work_info.at_work" placeholder="请选择">
+              <el-option
+                label="是"
+                :value="1">
+              </el-option>
+              <el-option
+                label="否"
+                :value="0">
+              </el-option>
+            </el-select>
             </el-form-item>
-            <el-col span="10">
+            <el-col :span="10">
             <el-form-item label="入职时间" prop="onboarding_time">
               <el-date-picker v-model="userInfo.work_info.onboarding_time"  type="date" value-format="yyyy-MM-dd" placeholder="选择日期" style="width: 100%;" />
             </el-form-item>
           </el-col>
-          <el-col span="10">
+          <el-col :span="10">
             <el-form-item label="离职时间" prop="resign_time">
               <el-date-picker v-model="userInfo.work_info.resign_time"  type="date" value-format="yyyy-MM-dd" placeholder="选择日期" style="width: 100%;" />
             </el-form-item>
           </el-col>
-          <el-col span="10">
+          <el-col :span="10">
             <el-form-item label="计时工资" prop="time_salary">
               <el-input v-model.number="userInfo.work_info.time_salary" type="number" />
             </el-form-item>
           </el-col>
-          <el-col span="10">
+          <el-col :span="10">
             <el-form-item label="计件工资" prop="piece_salary">
               <el-input v-model.number="userInfo.work_info.piece_salary" type="number" />
             </el-form-item>
@@ -158,6 +198,10 @@
         <el-tabs value="first">
           <el-tab-pane label="工作经历" name="first">
             <el-card v-for="(o,index) in userInfo.work_experiences" :key="index" class="box-card">
+              <div slot="header" class="clearfix">
+                <span>{{ o.work_units }}</span>
+                <el-button style="float: right; padding: 3px 0" type="primary" @click="deleteWorkExperience(index)">删除</el-button>
+              </div>
               <el-form-item label="工作单位" prop="name">
                 <el-autocomplete
                   v-model="o.work_units"
@@ -224,27 +268,28 @@
     <!-- -------------------------------- 查看简历 ------------------------------------ -->
     <el-dialog :visible.sync="resumeVisible" title="基本信息">
     <div id="printArea">
-      <el-form ref="ruleForm" :model="temp" :rules="rules" label-width="100px" class="demo-ruleForm">
+      <el-form ref="ruleForm" :model="userInfo" :rules="rules" label-width="100px" class="demo-ruleForm">
         <el-form-item label="姓名" prop="name">
-          <el-input v-model="temp.name" />
+          <el-input v-model="userInfo.name" />
         </el-form-item>
         <el-form-item label="出生年月" prop="birthday">
-          <el-date-picker v-model="temp.birthday" type="month" placeholder="选择日期" value-format="yyyy-MM" style="width: 100%;" />
+          <el-date-picker v-model="userInfo.birthday"  type="month" placeholder="选择日期" value-format="yyyy-MM" style="width: 100%;" />
         </el-form-item>
         <el-form-item label="身份证号" prop="id_card">
-          <el-input v-model="temp.id_card" />
+          <el-input v-model="userInfo.id_card" />
         </el-form-item>
         <el-form-item label="性别" prop="sex">
-          <el-radio-group v-model="temp.sex">
+          <el-radio-group v-model="userInfo.sex">
             <el-radio label="男">男</el-radio>
             <el-radio label="女">女</el-radio>
           </el-radio-group>
         </el-form-item>
+
         <el-form-item label="籍贯" prop="native_place">
-          <el-input v-model="temp.native_place" />
+          <el-input v-model="userInfo.native_place" />
         </el-form-item>
         <el-form-item label="学历" prop="school_level">
-          <el-select v-model="temp.school_level">
+          <el-select v-model="userInfo.school_level">
                 <el-option label="不限" :value="null">不限</el-option>
                 <el-option label="小学" value="小学" />
                 <el-option label="初中" value="初中" />
@@ -253,40 +298,161 @@
                 <el-option label="本科" value="本科" />
                 <el-option label="硕士及以上" value="硕士及以上" />
               </el-select>
-          <!-- <el-input v-model="temp.school_level" /> -->
         </el-form-item>
-        <el-form-item label="是否在业" prop="is_unemployed">
-          <el-radio-group v-model="temp.is_unemployed">
-            <el-radio :label="1">在业</el-radio>
-            <el-radio :label="0">待业</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="是否与凤凰人力合作" prop="is_cooperation">
-          <el-radio-group v-model="temp.is_cooperation">
-            <el-radio :label="1">是</el-radio>
-            <el-radio :label="0">否</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="期望薪资" prop="expected_salary">
-          <el-input v-model="temp.expected_salary" />
-        </el-form-item>
+        
+          <el-row>
+          <el-col :span="8">
+            <el-form-item label="紧急联系人" prop="urgent_contact">
+            <el-input v-model="userInfo.urgent_contact" placeholder="联系人姓名"/>
+          </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="联系人电话" prop="urgent_contact">
+            <el-input placeholder="联系人电话" v-model="userInfo.urgent_contact_cell_number"/>
+          </el-form-item>
+        </el-col>
+        </el-row>
+
+        <el-tabs value="first">
+          <el-tab-pane label="保险&健康信息" name="first">
+            <el-form-item label="健康情况" prop="health">
+              <!-- <el-input v-model="temp.insurance_health_info.health" /> -->
+              <el-select v-model="userInfo.insurance_health_info.health" placeholder="请选择">
+              <el-option
+                label="健康"
+                value="健康">
+              </el-option>
+              <el-option
+                label="不健康"
+                value="不健康">
+              </el-option>
+            </el-select>
+            </el-form-item>
+            <el-form-item label="健康证明" prop="health_certificate">
+              <el-upload
+              ref="uploadHealth"
+              action="customize"
+              list-type="picture-card"
+              :on-preview="handlePictureCardPreview"
+              :on-remove="(file) => {return handleHealthRemove(file)}"
+              :before-upload="handleBeforeUpload"
+              :file-list="userInfo.insurance_health_info.health_certificate"
+              :http-request="(file) => {return httpHealthRequest(file)}"
+            >
+            <i class="el-icon-plus" @click="submitHealthFileForm" />
+            </el-upload>
+            <el-dialog :visible.sync="picturePreviewVisible" :append-to-body="true">
+              <img width="100%" :src="dialogImageUrl" alt="">
+            </el-dialog>
+            </el-form-item>
+        <el-row>
+          <el-col :span="10">
+            <el-form-item label="参保类型" prop="partic_insu_type" label-width="100px">
+              <el-select v-model="userInfo.insurance_health_info.partic_insu_type" placeholder="请选择">
+              <el-option
+                label="社保五险"
+                value="社保五险">
+              </el-option>
+              <el-option
+                label="团体意外险"
+                value="团体意外险">
+              </el-option>
+              <el-option
+                label="雇主责任险"
+                value="雇主责任险">
+              </el-option>
+            </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="10">
+            <el-form-item label="保费金额" prop="partic_insu_amount">
+              <el-input v-model.number="userInfo.insurance_health_info.partic_insu_amount" type="number" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="10">
+          <el-form-item label="参保时间" prop="partic_insu_time">
+            <el-date-picker v-model="userInfo.insurance_health_info.partic_insu_time"  type="date" value-format="yyyy-MM-dd" placeholder="选择日期" style="width: 100%;" />  
+            </el-form-item>
+          </el-col>
+          <el-col :span="10">
+            <el-form-item label="离保时间" prop="leave_insu_time">
+              <el-date-picker v-model="userInfo.insurance_health_info.leave_insu_time"  type="date" value-format="yyyy-MM-dd" placeholder="选择日期" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+          </el-tab-pane>
+        </el-tabs>
+
+        <el-tabs value="first">
+          <el-tab-pane label="工作信息" name="first">
+            <el-form-item label="现在是否在职" prop="at_work">
+              <el-select v-model="userInfo.work_info.at_work" placeholder="请选择">
+              <el-option
+                label="是"
+                :value="1">
+              </el-option>
+              <el-option
+                label="否"
+                :value="0">
+              </el-option>
+            </el-select>
+            </el-form-item>
+            <el-col :span="10">
+            <el-form-item label="入职时间" prop="onboarding_time">
+              <el-date-picker v-model="userInfo.work_info.onboarding_time"  type="date" value-format="yyyy-MM-dd" placeholder="选择日期" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="10">
+            <el-form-item label="离职时间" prop="resign_time">
+              <el-date-picker v-model="userInfo.work_info.resign_time"  type="date" value-format="yyyy-MM-dd" placeholder="选择日期" style="width: 100%;" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="10">
+            <el-form-item label="计时工资" prop="time_salary">
+              <el-input v-model.number="userInfo.work_info.time_salary" type="number" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="10">
+            <el-form-item label="计件工资" prop="piece_salary">
+              <el-input v-model.number="userInfo.work_info.piece_salary" type="number" />
+            </el-form-item>
+          </el-col>
+          </el-tab-pane>
+          
+        </el-tabs>
+
         <el-tabs value="first">
           <el-tab-pane label="工作经历" name="first">
-            <el-card v-for="(o, index) in temp.work_experiences" :key="index" class="box-card">
+            <el-card v-for="(o,index) in userInfo.work_experiences" :key="index" class="box-card">
               <div slot="header" class="clearfix">
                 <span>{{ o.work_units }}</span>
                 <el-button style="float: right; padding: 3px 0" type="primary" @click="deleteWorkExperience(index)">删除</el-button>
               </div>
-              <el-form-item label="工作单位">
-                <el-input v-model="o.work_units" />
+              <el-form-item label="工作单位" prop="name">
+                <el-autocomplete
+                  v-model="o.work_units"
+                  :fetch-suggestions="(queryString, cb) => { queryCompanySearch(queryString, cb) }"
+                  placeholder="请输入"
+                  @select="handleSelect"
+                />
               </el-form-item>
-              <el-form-item label="工作部门">
-                <el-input v-model="o.department" />
-              </el-form-item>
-              <el-form-item label="工作岗位">
+              <el-form-item label="工作部门" prop="name">
+                <el-autocomplete
+                  v-model="o.department"
+                  :fetch-suggestions="(queryString, cb) => { queryDepartmentSearch(o.work_units, queryString, cb) }"
+                  placeholder="请输入"
+                  @select="handleSelect"
+                />
+              </el-form-item> 
+              <el-form-item label="工作岗位" prop="name">
                 <el-input v-model="o.job" />
               </el-form-item>
-              <el-form-item label="工作时间">
+              <el-form-item label="工作时间" prop="name">
+                <!-- <div style="display: flex; align-items:center;">
+                  <el-input v-model="o.work_time.from" class="inpurtStart" />
+                  <div style="border:0.5px solid gray; width:30%; max-width: 50px; height:0; margin-left:4px; margin-right:4px;" />
+                  <el-input v-model="o.work_time.to" class="inputEnd" />
+                </div> -->
                 <div style="display: flex; align-items:center;">
                   <!-- <el-input v-model="o.work_time.from" class="inpurtStart" /> -->
                   <el-date-picker v-model="o.work_time.from"  type="month" placeholder="选择日期" value-format="yyyy-MM" style="width: 100%;" />
@@ -297,17 +463,17 @@
                   <!-- <el-input v-model="o.work_time.to" class="inputEnd" /> -->
                 </div>
               </el-form-item>
-              <el-form-item label="是否还在工作">
+              <el-form-item label="是否还在工作" prop="is_cooperation">
                 <el-radio-group v-model="o.at_work">
                   <el-radio :label="1">是</el-radio>
                   <el-radio :label="0">否</el-radio>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item label="工作内容">
-                <el-input v-model="o.work_content" type="textarea" rows="3" />
+              <el-form-item label="工作内容" prop="name">
+                <el-input v-model="o.work_content" type="textarea" />
               </el-form-item>
-              <el-form-item label="合同类型">
-                <el-select v-model="o.contract_type" >
+              <el-form-item label="合同类型" prop="name">
+                <el-select v-model="o.contract_type">
                   <el-option label="劳务合同" value="劳务合同"/>
                   <el-option label="劳动合同" value="劳动合同"/>
                 </el-select>
@@ -346,6 +512,7 @@
           <el-tab-pane :label="'工作经历'+(index+1)" name="first">
             <div style="display:flex;margin-bottom:5px"><div style="width:10%;">公司名称</div><div style="margin-left:10px; width:90%;">{{ obj.work_units }} </div></div>
             <div style="display:flex;margin-bottom:5px"><div style="width:10%;">工作时间</div><div style="margin-left:10px; width:90%; display: flex; align-items: center;">{{ obj.work_time.from }} <div style="border:0.5px solid gray; width:5%; max-width: 50px; height:0; margin-left:4px; margin-right:4px;" /> {{ obj.work_time.to }}</div> </div>
+            <div style="display:flex; align-items:center;margin-bottom:5px"><div style="width:10%;">合同号</div><div style="margin-left:10px; width:50%;"><el-input v-model="obj.contract_number"></el-input></div></div>
             <div style="display:flex; margin-bottom:10px;"><div style="width:10%;">合同情况</div></div>
             <el-upload
               ref="upload"
@@ -375,7 +542,7 @@
     <el-dialog :visible.sync="printVisible" class="printDialog">
       <div ref="print">
         <section class="print-page page-a4">
-          <resume-view :form="temp"/>
+          <resume-view :form="userInfo"/>
           <div class="print-bottom hidden-print noPrint" />
         </section>
       </div>
@@ -393,7 +560,8 @@ import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { saveEmployee, deleteEmployee } from '@/api/employee'
 import { getCompanyJobList } from '@/api/company'
-import { getResume, getWorkExperience, uploadForDynamic, saveContract } from '@/api/employee'
+import {getRandomString} from '@/utils/random'
+import { getResume, getWorkExperience, uploadForDynamic, saveContract, downloadEmployee } from '@/api/employee'
 import resumeView from './resume-view.vue'
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
@@ -482,36 +650,63 @@ export default {
       },
       // 正在查看的人员信息
       temp: {
-        id: '001',
-        name: '兰森',
-        id_card: '513424199509210014',
-        birthday: '1995-09',
-        school_level: '本科',
+        id: null,
+        id_card: '',
+        sex: '',
         native_place: '',
-
-        work_experiences: [{
-          work_units: '德昌穗捷财税服务有限公司',
-          department: '无',
-          job: '财务经理',
-          work_content: '* 负责50+客户的财务问题对接；\r\n* 负责帮助客户传达政策变化，为客户做税务筹划，帮助客户整理财务报表，沟通银行贷款等事项；\r\n* 曾成功帮助3家客户解决税务风险评估事件。',
-          work_time: {
-            from: '2021.10',
-            to: '至今'
-          },
-          at_work: '是'
+        name: '',
+        id_card: '',
+        birthday: '',
+        school_level: '',
+        native_place: '',
+        work_experiences: [],
+        work_info:{
+          at_work:1,
+          onboarding_time:"",
+          resign_time:"",
+          time_salary:null,
+          piece_salary:null
         },
-        {
-          work_units: '德昌佳晋包装有限公司',
-          department: '财务部',
-          job: '初级会计',
-          work_content: '* 负责经营生产的票据整理；\r\n* 负责出财务报表并进行报税；\r\n* 负责进行账簿装订。',
-          work_time: {
-            from: '2020.05',
-            to: '2021.10'
-          },
-          at_work: '否'
-        }]
+        insurance_health_info:{
+          health:"",
+          health_certificate:null,
+          partic_insu_type:"",
+          partic_insu_amount:null,
+          partic_insu_time:"",
+          leave_insu_time:""
+        }
       },
+      // temp: {
+      //   id: '001',
+      //   name: '兰森',
+      //   id_card: '513424199509210014',
+      //   birthday: '1995-09',
+      //   school_level: '本科',
+      //   native_place: '',
+
+      //   work_experiences: [{
+      //     work_units: '德昌穗捷财税服务有限公司',
+      //     department: '无',
+      //     job: '财务经理',
+      //     work_content: '* 负责50+客户的财务问题对接；\r\n* 负责帮助客户传达政策变化，为客户做税务筹划，帮助客户整理财务报表，沟通银行贷款等事项；\r\n* 曾成功帮助3家客户解决税务风险评估事件。',
+      //     work_time: {
+      //       from: '2021.10',
+      //       to: '至今'
+      //     },
+      //     at_work: '是'
+      //   },
+      //   {
+      //     work_units: '德昌佳晋包装有限公司',
+      //     department: '财务部',
+      //     job: '初级会计',
+      //     work_content: '* 负责经营生产的票据整理；\r\n* 负责出财务报表并进行报税；\r\n* 负责进行账簿装订。',
+      //     work_time: {
+      //       from: '2020.05',
+      //       to: '2021.10'
+      //     },
+      //     at_work: '否'
+      //   }]
+      // },
       // 简历显示与否
       resumeVisible: false,
       contractVisible: false,
@@ -570,7 +765,7 @@ export default {
       this.$print(this.$refs.print)
     },
     deleteWorkExperience(index) {
-      this.temp.work_experiences.splice(index, 1)
+      this.userInfo.work_experiences.splice(index, 1)
     },
     msgSuccess(msg) {
       this.$message({
@@ -590,6 +785,26 @@ export default {
       //   }, 1.5 * 1000)
       // })
     },
+
+    downLoadExcel(){
+    downloadEmployee()
+      .then(response => {
+      console.log("下载", response);
+      // let blob = new Blob([response.data], {
+      //     type: 'application/vnd.ms-excel'
+      // });
+          //  兼容chrome/firefox
+          let aTag = document.createElement('a');
+          // aTag.download = 'Testfile.xls';
+          // aTag.href = window.URL.createObjectURL(blob);
+          let randomValue = getRandomString()
+          
+          aTag.href = process.env.VUE_APP_IMAGE_BASE_URI + "/employees/to_excel?rand=" + randomValue
+          aTag.click();
+          URL.revokeObjectURL(aTag.href);
+      
+    })
+  },
 
     // auto-complete  工作单位选择
     async queryCompanySearch(queryString, cb) {
@@ -654,13 +869,13 @@ export default {
       mf.append('file', item.file)
       uploadForDynamic(mf).then(res => {
         if (res.data.status === 'success') {
-          item.url = process.env.VUE_APP_BASE_API + res.data.image_url
+          item.url = process.env.VUE_APP_IMAGE_BASE_URI + res.data.data.image_url
           if (this.temp.work_experiences[index].image_urls == null) {
             this.temp.work_experiences[index].image_urls = []
           }
           this.temp.work_experiences[index].image_urls.push({ 
             uid: res.data.data.image_url, 
-            url: process.env.VUE_APP_BASE_API + res.data.data.image_url 
+            url: process.env.VUE_APP_IMAGE_BASE_URI + res.data.data.image_url 
           })
           this.msgSuccess('Uploaded successfully')
           // this.upload.open = false
@@ -692,14 +907,22 @@ export default {
       mf.append('file', item.file)
       uploadForDynamic(mf).then(res => {
         if (res.data.status === 'success') {
-          item.url = process.env.VUE_APP_BASE_API + res.data.image_url
-          if (this.userInfo.insurance_health_info.health_certificate == null) {
+          const fileUrl = process.env.VUE_APP_IMAGE_BASE_URI.concat(res.data.data.image_url)
+          console.log("success:", fileUrl);
+          item.url = fileUrl
+          if (this.userInfo.insurance_health_info.health_certificate == null|undefined) {
             this.userInfo.insurance_health_info.health_certificate = []
           }
+          
           this.userInfo.insurance_health_info.health_certificate.push({ 
             uid: res.data.data.image_url, 
-            url: process.env.VUE_APP_BASE_API + res.data.data.image_url 
+            url: fileUrl
           })
+          console.log("success:", this.userInfo.insurance_health_info.health_certificate);
+          // this.userInfo.insurance_health_info.health_certificate = { 
+          //   uid: res.data.data.image_url, 
+          //   url: process.env.VUE_APP_IMAGE_BASE_URI + res.data.data.image_url 
+          // }
           this.msgSuccess('Uploaded successfully')
           // this.upload.open = false
         }
@@ -709,17 +932,19 @@ export default {
       // }
     },
     handleHealthRemove(file) {
-      var idx = this.userInfo.insurance_health_info.health_certificate.findIndex(item => {
-        return item.uid == file.uid
-      })
-      this.userInfo.insurance_health_info.health_certificate.splice(idx, 1)
+      // var idx = this.userInfo.insurance_health_info.health_certificate.findIndex(item => {
+      //   return item.uid == file.uid
+      // })
+      // this.userInfo.insurance_health_info.health_certificate.splice(idx, 1)
+      this.userInfo.insurance_health_info.health_certificate = undefined;
     },
+
     submitHealthFileForm() {
       this.$refs.uploadHealth.submit()
     },
 
     handleSave() {
-      var filterList = this.temp.work_experiences.filter(item => {
+      var filterList = this.userInfo.work_experiences.filter(item => {
           return item.at_work == 1
         });
         if (filterList.length > 1) {
@@ -740,7 +965,7 @@ export default {
           // });          
         });
         } else {
-      saveEmployee(this.temp).then(response => {
+      saveEmployee(this.userInfo).then(response => {
         if (response.data.status == 'success') {
           this.msgSuccess('保存成功')
           this.resumeVisible = false
@@ -752,7 +977,7 @@ export default {
     },
 
     handleDeleteEmployee(){
-      deleteEmployee({id:this.temp.id}).then(response => {
+      deleteEmployee({id:this.userInfo.id}).then(response => {
         if (response.data.status == 'success') {
           this.msgSuccess('删除成功')
           this.resumeVisible = false
@@ -847,7 +1072,7 @@ export default {
       console.log('查看简历', row)
       getResume({ id: row.id }).then(response => {
         console.log('查看简历', response.data.data)
-        this.temp = response.data.data
+        this.userInfo = response.data.data
       })
       // this.temp = response.data.data
       console.log('查看简历触发了', this.temp)
@@ -864,6 +1089,33 @@ export default {
     },
     handleInsert() {
       this.dialogInsertVisible = true
+      this.userInfo =  {
+        id: null,
+        id_card: '',
+        sex: '',
+        native_place: '',
+        name: '',
+        id_card: '',
+        birthday: '',
+        school_level: '',
+        native_place: '',
+        work_experiences: [],
+        work_info:{
+          at_work:1,
+          onboarding_time:"",
+          resign_time:"",
+          time_salary:null,
+          piece_salary:null
+        },
+        insurance_health_info:{
+          health:"",
+          health_certificate:null,
+          partic_insu_type:"",
+          partic_insu_amount:null,
+          partic_insu_time:"",
+          leave_insu_time:""
+        }
+      }
     },
 
     handlePictureCardPreview(args) {
@@ -888,7 +1140,7 @@ export default {
       })
     },
     handleAddTempWorkExp() {
-      this.temp.work_experiences.push({
+      this.userInfo.work_experiences.push({
         work_units: '',
         department: '',
         job: '',
@@ -897,7 +1149,8 @@ export default {
           from: '',
           to: ''
         },
-        at_work: 0
+        at_work: 0,
+        contract_type: "劳务合同" 
       })
     },
     async handleConf() {
@@ -1009,7 +1262,8 @@ export default {
         native_place: '',
         work_experiences: []
       };
-  }
+  },
+  
 }
 </script>
 <style >

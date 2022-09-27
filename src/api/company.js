@@ -62,3 +62,12 @@ export function deleteCompany(data) {
     data
   })
 }
+
+export function exportCustomers(params) {
+  return request({
+    url: '/customer/to_excel',
+    method: 'get',
+    responseType: "blob",
+    params
+  })
+}

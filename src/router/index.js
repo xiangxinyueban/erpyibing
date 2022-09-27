@@ -138,18 +138,18 @@ export const asyncRoutes = [
       }
     ]
   },
-  {
-    path: '/job',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/job/index'),
-        name: 'Job',
-        meta: { title: '职位管理', icon: 'skill', noCache: true, breadcrumb: true }
-      }
-    ]
-  },
+  // {
+  //   path: '/job',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       component: () => import('@/views/job/index'),
+  //       name: 'Job',
+  //       meta: { title: '职位管理', icon: 'skill', noCache: true, breadcrumb: true }
+  //     }
+  //   ]
+  // },
   {
     path: '/salary',
     component: Layout,

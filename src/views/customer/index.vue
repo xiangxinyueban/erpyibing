@@ -1,7 +1,10 @@
 <template>
   <div class="app-container">
     <div class="search-top">
+      <div>
       <el-button type="primary" @click="newCustomer()">新增客户</el-button>
+      <el-button type="success" @click="downLoadExcel()"> 导出客户信息</el-button>
+      </div>
       <el-input v-model="searchContent" placeholder="请输入内容" class="input-with-select">
         <el-button slot="append" @click="searchCustomers(0)" icon="el-icon-search" />
       </el-input>
@@ -85,6 +88,7 @@
     <el-dialog :visible.sync="contractVisible" title="基本信息">
       <el-card v-for="(obj, index) in company_contrats.contract" :title="obj.name">
         <div style="display:flex;margin-bottom:5px;align-items: center;"><div style="width:10%;">合同名称</div><div style="margin-left:10px; width:90%;"><el-input v-model="obj.name" /> </div></div>
+        <div style="display:flex;margin-bottom:5px;align-items: center;"><div style="width:10%;">合同号码</div><div style="margin-left:10px; width:90%;"><el-input v-model="obj.contract_number" /> </div></div>
         <div style="display:flex; margin-bottom:10px;"><div style="width:10%;">合同图像</div></div>
         <el-upload
           ref="upload"
@@ -125,10 +129,12 @@
 
 <script>
 import clipboard from '@/utils/clipboard'
+import {getRandomString} from '@/utils/random'
 // import ComplexTable from './complex-table.vue'
 import { lookupEmployee } from '@/api/employee'
-import { saveCompany, getCompanyList, getCompanyInfo, getCompanyConstract, saveCompanyConstract, deleteCompany } from '@/api/company'
+import { saveCompany, getCompanyList, getCompanyInfo, getCompanyConstract, saveCompanyConstract, deleteCompany, exportCustomers } from '@/api/company'
 import { uploadForDynamic } from '@/api/employee'
+
 export default {
   name: 'Customer',
   // components: {ComplexTable},
@@ -308,11 +314,11 @@ export default {
       mf.append('file', item.file)
       uploadForDynamic(mf).then(res => {
         if (res.data.status === 'success') {
-          item.url = 'http://43.142.50.173:5000/' + res.data.image_url
+          item.url = process.env.VUE_APP_IMAGE_BASE_URI + res.data.data.image_url
           // console.log("工作经历", this.temp.work_experiences[0].image_urls)
           this.company_contrats.contract[index].image_urls.push({
             uid: res.data.data.image_url,
-            url: 'http://43.142.50.173:5000/' + res.data.data.image_url
+            url: process.env.VUE_APP_IMAGE_BASE_URI + res.data.data.image_url
           })
           console.log('工作经历', this.company_contrats.contract[index].image_urls)
           this.msgSuccess('Uploaded successfully')
@@ -375,6 +381,40 @@ export default {
 
     handleCurrentChange(val) {
       this.searchCustomers(val);
+    },
+    downLoadExcel(){
+      exportCustomers({rand:getRandomString()})
+      .then(res => {
+        let blob = new Blob([res.data], {
+          type: "application/vnd.ms-excel",
+        });
+        // console.log("下载", response);
+        // let blob = new Blob([response.data], {
+        //     type: 'application/vnd.ms-excel'
+        // });
+        //     //  兼容chrome/firefox
+        //     let aTag = document.createElement('a');
+        //     // aTag.download = 'Testfile.xls';
+        //     // aTag.href = window.URL.createObjectURL(blob);
+            let randomValue = getRandomString()
+            
+        //     aTag.href = process.env.VUE_APP_IMAGE_BASE_URI + "customer/to_excel?rand=" + randomValue
+        //     aTag.click();
+        //     URL.revokeObjectURL(aTag.href);
+        let objectUrl = (window.URL || window.webkitURL).createObjectURL(
+            blob
+          );
+        let downFile = document.createElement("a");
+          downFile.style.display = "none";
+          downFile.href = process.env.VUE_APP_IMAGE_BASE_URI + "/customer/to_excel?rand=" + randomValue;
+          // downFile.download = fileName; // 下载后文件名
+          document.body.appendChild(downFile);
+          downFile.click();
+          document.body.removeChild(downFile); // 下载完成移除元素 // window.location.href = objectUrl
+          window.URL.revokeObjectURL(objectUrl); 
+        
+      })
+      console.log("环境变量：",process.env)
     }
   }
 }

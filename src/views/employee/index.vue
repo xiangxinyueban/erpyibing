@@ -36,13 +36,13 @@
                 <el-option label="否" :value="0" />
               </el-select>
             </el-form-item>
-            <el-form-item label="合作情况">
+            <!-- <el-form-item label="合作情况">
               <el-select v-model="searchInfo.is_cooperation" placeholder="合作情况">
                 <el-option label="不限" :value="null" />
                 <el-option label="是" :value="1" />
                 <el-option label="否" :value="0" />
               </el-select>
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="在职公司">
               <el-autocomplete
                   v-model="searchInfo.company_online"
@@ -64,13 +64,13 @@
                 <el-option label="财务" value="财务" />
               </el-select> -->
             </el-form-item>
-            <el-form-item label="预期薪资">
+            <!-- <el-form-item label="预期薪资">
               <div style="display: flex; align-items: center; justify-content: space-between;">
                 <el-input v-model="searchInfo.expected_salary.from"  class="inputstart" />
                 <div style="border:0.5px solid gray; width:20%; height:0; margin:2px;" />
                 <el-input v-model="searchInfo.expected_salary.to" class="inputend" />
               </div>
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="部门">
               <el-autocomplete
                   v-model="searchInfo.department"
@@ -126,11 +126,6 @@ export default {
         school_level: null,
         is_unemployed: null,
         professional: null,
-        is_cooperation: null,
-        expected_salary: {
-          from: 0,
-          to: 0
-        },
         company_online: '',
         department: '',
         number: 20

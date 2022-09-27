@@ -55,3 +55,11 @@ export function deleteEmployee(data) {
     data
   })
 }
+export function downloadEmployee(data) {
+  return request({
+    url: '/employees/to_excel',
+    method: 'get',
+    responseType: "blob",
+    data
+  })
+}
